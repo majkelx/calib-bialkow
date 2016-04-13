@@ -1,0 +1,8 @@
+#
+# calib-bialkow and phot-bialkow configuration file
+
+# Add calib-bialkow  to path
+export Calib_PATH='/home/observer/source/calib-bialkow'
+export Phot_PATH='/home/observer/source/phot-bialkow'
+
+PATH="$PATH:${Calib_PATH}:${Phot_PATH}"

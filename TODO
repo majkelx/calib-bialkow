@@ -1,0 +1,5 @@
+TODO (MK)
+
+[ ] zautomatyzować (dodać) instalację pakietu f2n
+[ ] zautomatyzować instalację wszysykiego przez distutils setup.py
+[ ] uzupełnić '4. Ppis dzialania skryptu' w readme
