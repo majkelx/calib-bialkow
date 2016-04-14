@@ -1,0 +1,68 @@
+#!/bin/tcsh -f
+
+#
+# Program do w miare inteligentnego odejmowania darku i biasu od obrazkow z serii
+#
+# Uzycie: sub-biases <dark.avr> <exp.time>.<#fl_ev> <#flat_mo>
+#   e.g. /sub-biases dark-100.avr 100 24 16
+#
+
+ls *.fits > fits.cat
+fsharecat fits.cat
+fshareflt image.cat
+#head -n $3 flat.cat > flat-ev.cat
+#tail -n $4 flat.cat > flat-mo.cat
+
+# dzielimy recznie na flat-mo.cat i flat-ev.cat, to samo z dark.cat
+
+#fshareflt flat-mo.cat
+fshareflt flat.cat
+
+fexpcat dark.cat 200 dark-200.cat
+fexpcat dark.cat 15 dark-15.cat
+#fexpcat dark.cat 23 dark-23.cat
+fcsmean -ns=1 dark-200.cat
+fcsmean -ns=1 dark-15.cat
+#fcsmean -ns=2 bias.cat
+
+ftsproc subt flat.cat dark-15.avr
+
+fflatscale -div flat-b.cat
+fflatscale -div flat-v.cat
+fflatscale -div flat-r.cat
+fflatscale -div flat-i.cat
+fflatscale -div flat-i-6.cat
+fcsmean -nsl=1 -nsh=2 flat-b-sc.cat
+fcsmean -nsl=1 -nsh=2 flat-v-sc.cat
+fcsmean -nsl=1 -nsh=2 flat-r-sc.cat
+fcsmean -nsl=1 -nsh=2 flat-i-6-sc.cat
+fcsmean -nsl=1 -nsh=2 flat-i-sc.cat
+
+# ----------- Interpolacja biasu ---------
+
+fstat image.cat
+fstat bias.cat
+rmpr image.sts
+rmpr bias.sts
+
+echo $2 > tmp.exp
+
+awk '{printf("%8s %9.2lf %s\n",$3,$12,$1)}' image.sts > image.dat
+awk '{printf("%8s %9.2lf %s\n",$3,$12,$1)}' bias.sts > bias.dat
+
+echo $1 > dm.cat
+fstat dm.cat
+rmpr dm.sts
+awk '{printf("%9.2lf\n",$12)}' dm.sts > dm.dat
+
+./int-bias
+
+# ----------- Koniec interpolacji biasu ---------
+
+chstr subdfi.csh "= " "="
+chstr subdfi.csh "= " "="
+chstr subdfi.csh "= " "="
+chstr subdfi.csh "= " "="
+
+exit
+

@@ -1,0 +1,26 @@
+# Instalacja i Uruchomienia calib-bialkow pod MacOS
+
+0. Zadbać o trochę wolnego dysku
+
+1. Instalacja python
+Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
+    https://www.continuum.io/downloads
+
+2. Zaopatrzyć się w jeden z poniższych systemów instalcji pakietów:
+  brew     : http://brew.sh
+  MacPorts : https://www.macports.org
+  <ten trzeci>: którego nawet nazwy zapomianłem ale jeśli go masz to wystzrczy
+
+3. Zainstalować narzędzia GNU: gawk
+    Poleceniem brew lub port zależnie od systemu pakietów:
+        > brew install gawk
+    lub
+        > sudo port install gawk
+
+
+
+
+
+
+Zmienić w calib_bialkow.bash zmienną 'edit' z gvim na coś co się lubi
+można zainstaować przez port lub brew na przyklad pico etc...

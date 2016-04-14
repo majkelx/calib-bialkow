@@ -1,0 +1,2 @@
+rm *.cat *.h *.sts *flat*.fits *-bt.fits ff*.log *div*.fits *-b.fits *-btf.fits *-dark.fits *-bias.fits
+rm dark*expt* *-bd.fits *bdtf.fits obj* night-bias*
