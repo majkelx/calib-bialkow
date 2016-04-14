@@ -1,6 +1,9 @@
 # Instalacja i Uruchomienia calib-bialkow pod MacOS
 
-0. Zadbać o trochę wolnego dysku
+-1. Używać wersji calib-bialkow zawierającej ten plik 1.1 patrz plik VERSION (jak go nie ma to źle)
+
+0. Zainstalować Xcode command line tools, na przyklad wg poradnika:
+    http://railsapps.github.io/xcode-command-line-tools.html
 
 1. Instalacja python
 Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
@@ -9,7 +12,7 @@ Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
 2. Zaopatrzyć się w jeden z poniższych systemów instalcji pakietów:
   brew     : http://brew.sh
   MacPorts : https://www.macports.org
-  <ten trzeci>: którego nawet nazwy zapomianłem ale jeśli go masz to wystzrczy
+  <ten trzeci>: którego nawet nazwy zapomianłem ale jeśli go masz to wystarczy
 
 3. Zainstalować narzędzia GNU: gawk
     Poleceniem brew lub port zależnie od systemu pakietów:
@@ -17,6 +20,45 @@ Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
     lub
         > sudo port install gawk
 
+4. Zainstalować pakiet Netpbm do konwesji obrazów brew / port
+    > brew install Netpbm
+
+5. Zainstalować ImageMagic (convert)
+    > brew install imagemagick
+
+6. Zainstalować gnuplot
+    > brew install gnuplot
+
+7. Zainstalować Eclipse (ESO):
+    > ftp ftp://ftp.eso.org/pub/eclipse/eclipse-5.0.0/eclipse-main-5.0.0.tar.gz
+    > tar -xzf eclipse-main-5.0.0.tar.gz
+    > cd eclipse-5.0.0/
+    > ./configure
+    > make
+    no i u mnie przynajmniej make się wywali na kompilacji irstd.c
+    Biblioteka jest niepoprawian od 2005 a kompilatory zrobiły się bardziej
+    wymagające. Więc w linii 302 tego pliku dodajemy NULL aby brzmiała tak:
+        if (cat == NULL) return NULL;
+
+    > make
+    Teraz wywala się na linkowaniu... ale zdążyła zrobić plik który jest
+    potrzebny:
+        ./qfits/bin/dfits
+    jakoś dodoajemy ten albo wszystkie z tego katalogu pliki do ścieżki,
+    np kopiując go do katalogu calib-bialkow
+
+8. Zainstalować bash w wersji 4+
+        > brew install bash
+    nie dziala u mnie, jakiś serwer nie odpowiada... może naprawią
+        > sudo port install bash
+    jest OK
+
+9. Zainstalować jday,
+    https://sourceforge.net/projects/jday/
+   wg instrukcji, ./configure / make / make install
+
+10. Zainstalować pytonowi PyObjC (dla pyraf) duże i długo.
+    > pip install PyObjC
 
 
 

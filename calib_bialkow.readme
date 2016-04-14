@@ -24,13 +24,17 @@ Do poprawnego działania wszystkich elementów skryptu wymagane są
 następujące programy zainstalowane w systemie Linux:
 - bash, wersja >= 4.0,
 - python, wersja >= 2.6,
-- moduły języka python: numpy, pyfits, f2n,
+- moduły języka python: numpy, pyfits, f2n (http://obswww.unige.ch/~tewes/f2n_dot_py/),
 - IRAF/PyRAF,
-- gawk, sed, grep, 
+- gawk, sed, grep, gvim
 - eclipse (ESO),
 - gnuplot,
 - jday,
-- netpbm, convert
+- netpbm,  (http://netpbm.sourceforge.net)
+- convert (ImageMagick http://www.imagemagick.org)
+
+Dokumentacja i instrukcja instalacji modułu f2n znajduje się pod adresem
+    http://obswww.unige.ch/~tewes/f2n_dot_py/
 
 2. Argumenty wywołania, plik z dziennikiem obserwacyjnym.
   
@@ -45,7 +49,7 @@ argument. Plik ten jest tworzony na podstawie zawartości nagłówków
 wszystkich plików FITS znajdujących się w aktualnym katalogu.
 
 Po każdym uruchomieniu skryptu z poprawnymi argumentami (jednym lub dwoma),
-wyświetlany jest wedytorze vim dziennik obserwacyjny w celu sprawdzenia 
+wyświetlany jest wedytorze vim (gvim) dziennik obserwacyjny w celu sprawdzenia
 jego porawności i kompletności. W tym momencie można dokonać ostatnich 
 korekt (a następnie je zapisać). Zbiór danych kalibracyjnych oraz 
 naukowych objętych dalszym działaniem skryptu zdefiniowany jest w pliku DO. 
@@ -67,7 +71,7 @@ katalogów zawierających oprogramowanie do automatycznej kalibracji
 (Calib_PATH) i redukcji (Phot_PATH).
 Jeśli chcemy mieć dostęp do programów kalibracyjnych ustawiony na stałe 
 to należy dopisać to polecenie do ustawień startowych powłoki, 
-np. do pliku .bashrc jeśli domyślnie gorzystany z powłoki bash. 
+np. do pliku .bashrc jeśli domyślnie korzystany z powłoki bash.
 
 Edytując plik calib_bialkow.bash można zmienić ustawienia kilku
 zmiennych wewnętrznych zdefiniowanych w jednym bloku na początku skryptu.
@@ -98,5 +102,4 @@ dla obrazów typu FLAT-FIELD, które będą używane w procesie kalibracji.
 
 
 4. Opis działania skryptu.
-
 

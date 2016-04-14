@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ $# -lt 1 ]
 then
@@ -48,154 +48,154 @@ edit="gvim -f"
 ###
 
 if test -d pyraf
-then
-rm -rf pyraf
+    then
+    rm -rf pyraf
 fi
 
 if test -n "${Calib_PATH}"
-then
-if test -s ${Calib_PATH}/calib_bialkow.bash
-then
-correct_path=`echo ${PATH} | grep -o  "${Calib_PATH}" | awk 'NR==1 {print $1}'`
-if test "${correct_path}" != "${Calib_PATH}" 
-then
-echo " PATH: ${PATH}"
-echo " Calib_PATH: ${Calib_PATH}"
-#echo " correct_path: ${correct_path}"
-echo ""
-echo " The PATH variable does not contain path to calibration software."
-echo " Find the directory with calibration software in your system."
-echo " Next find .calib_phot_bialkow_rc file,"
-echo " correct it, if necessary, and type in terminal:"
-echo " source <path_to_file>/.calib_phot_bialkow_rc"
-echo ""
-exit
-fi
+    then
+    if test -s ${Calib_PATH}/calib_bialkow.bash
+        then
+        correct_path=`echo ${PATH} | grep -o  "${Calib_PATH}" | awk 'NR==1 {print $1}'`
+        if test "${correct_path}" != "${Calib_PATH}"
+            then
+            echo " PATH: ${PATH}"
+            echo " Calib_PATH: ${Calib_PATH}"
+            #echo " correct_path: ${correct_path}"
+            echo ""
+            echo " The PATH variable does not contain path to calibration software."
+            echo " Find the directory with calibration software in your system."
+            echo " Next find .calib_phot_bialkow_rc file,"
+            echo " correct it, if necessary, and type in terminal:"
+            echo " source <path_to_file>/.calib_phot_bialkow_rc"
+            echo ""
+            exit
+            fi
+    else
+        echo " Calib_PATH: ${Calib_PATH}"
+        echo ""
+        echo " The Calib_PATH variable does not indicate the correct location"
+        echo " of the calibration software."
+        echo " Find the directory with calibration software in your system."
+        echo " Next find .calib_phot_bialkow_rc file,"
+        echo " correct it, if necessary, and type in terminal:"
+        echo " source <path_to_file>/.calib_phot_bialkow_rc"
+        echo ""
+        exit
+    fi
 else
-echo " Calib_PATH: ${Calib_PATH}"
-echo ""
-echo " The Calib_PATH variable does not indicate the correct location"
-echo " of the calibration software."
-echo " Find the directory with calibration software in your system."
-echo " Next find .calib_phot_bialkow_rc file,"
-echo " correct it, if necessary, and type in terminal:"
-echo " source <path_to_file>/.calib_phot_bialkow_rc"
-echo ""
-exit
-fi
-else
-echo " The Calib_PATH variable is empty,"
-echo " find .calib_phot_bialkow_rc file in your system,"
-echo " correct it, if necessary, and type in terminal:"
-echo " source <path_to_file>/.calib_phot_bialkow_rc"
-echo ""
-exit
+    echo " The Calib_PATH variable is empty,"
+    echo " find .calib_phot_bialkow_rc file in your system,"
+    echo " correct it, if necessary, and type in terminal:"
+    echo " source <path_to_file>/.calib_phot_bialkow_rc"
+    echo ""
+    exit
 fi
 
 declare -A ff_file=()
 for f in filter_seq
-do
-ff_file[$f]=""
+    do
+    ff_file[$f]=""
 done
 
 if test ! -d  ${AUX_FILES_DIR}
-then
-echo " Directory ${AUX_FILES_DIR} does not exist"
-echo " It should contain auxiliary calibration files, e.g. master dark, average fringing, arcs ..."
-exit
+    then
+    echo " Directory ${AUX_FILES_DIR} does not exist"
+    echo " It should contain auxiliary calibration files, e.g. master dark, average fringing, arcs ..."
+    exit
 fi
 
 if test ! -s ${AUX_FILES_DIR}/${long_dark_2}
-then
-echo " File ${long_dark_2} does not exist in directory ${AUX_FILES_DIR}"
-exit
+    then
+    echo " File ${long_dark_2} does not exist in directory ${AUX_FILES_DIR}"
+    exit
 fi
 
 if test ! -s ${AUX_FILES_DIR}/${long_dark_16}
-then
-echo " File ${long_dark_16} does not exist in directory ${AUX_FILES_DIR}"
-exit
+    then
+    echo " File ${long_dark_16} does not exist in directory ${AUX_FILES_DIR}"
+    exit
 fi
 
 if test ! -d  ${CALIB_FILES_DIR}
-then
-mkdir ${CALIB_FILES_DIR}
+    then
+    mkdir ${CALIB_FILES_DIR}
 fi
 if test ! -d  ${CDATA_DIR}
-then
-mkdir ${CDATA_DIR}
+    then
+    mkdir ${CDATA_DIR}
 fi
 
 if test -e ff-ev.log
-then
-rm ff-ev.log
+    then
+    rm ff-ev.log
 fi
 if test -e ff-mo.log
-then
-rm ff-mo.log
+    then
+    rm ff-mo.log
 fi
 
 if test ! -s login.cl
-then
-if test -s ${HOME}/login.cl
-then
-cp ${HOME}/login.cl .
-else
-echo " IRAF configuration file login.cl not found !"
-echo " Find it or create (command mkiraf)"
-exit
-fi
+    then
+    if test -s ${HOME}/login.cl
+        then
+        cp ${HOME}/login.cl .
+    else
+        echo " IRAF configuration file login.cl not found !"
+        echo " Find it or create (command mkiraf)"
+        exit
+    fi
 fi
 
 if test -s ${AUX_FILES_DIR}/bias_16_interp.plt
-then
-cp ${AUX_FILES_DIR}/bias_16_interp.plt .
+    then
+    cp ${AUX_FILES_DIR}/bias_16_interp.plt .
 else
-echo "Warning: ${AUX_FILES_DIR}/bias_16_interp.plt file not found !"
+    echo "Warning: ${AUX_FILES_DIR}/bias_16_interp.plt file not found !"
 fi
 if test -s ${AUX_FILES_DIR}/bias_2_interp.plt
-then
-cp ${AUX_FILES_DIR}/bias_2_interp.plt .
+    then
+    cp ${AUX_FILES_DIR}/bias_2_interp.plt .
 else
-echo "Warning: ${AUX_FILES_DIR}/bias_2_interp.plt file not found !"
+    echo "Warning: ${AUX_FILES_DIR}/bias_2_interp.plt file not found !"
 fi
 
 # Make new logfile when l option used:
 if test "$2" = "l"
-then
+    then
 
-if test ! -s ${Calib_PATH}/mklog-bialkow.awk
-then
-echo " Script mklog-bialkow.awk does not exist in ${Calib_PATH} directory !"
-exit
-fi
+    if test ! -s ${Calib_PATH}/mklog-bialkow.awk
+        then
+        echo " Script mklog-bialkow.awk does not exist in ${Calib_PATH} directory !"
+        exit
+    fi
 
-n_fits=`ls *.fits | wc -l`
-if test ${n_fits} -le ${min_fits_files}
-then
-echo " Number of FITS files in the current directory ${PWD}"
-echo " is too small: ${n_fits}"
-exit
-fi
+    n_fits=`ls *.fits | wc -l`
+    if test ${n_fits} -le ${min_fits_files}
+        then
+        echo " Number of FITS files in the current directory ${PWD}"
+        echo " is too small: ${n_fits}"
+        exit
+    fi
 
-if test ! -s ${logfile}
-then
-for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
+    if test ! -s ${logfile}
+        then
+        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
+    else
+        rm -f ${logfile}
+        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
+    fi
+
+    echo " Log-file  ${logfile}  done."
+
 else
-rm -f ${logfile}
-for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
-fi
 
-echo " Log-file  ${logfile}  done."
-
-else
-
-if test ! -s ${logfile}
-then 
-echo " ${logfile} not found !"
-echo " Use l option to create new log file."
-exit
-fi
+    if test ! -s ${logfile}
+        then
+        echo " ${logfile} not found !"
+        echo " Use l option to create new log file."
+        exit
+    fi
 
 fi
 
@@ -221,57 +221,57 @@ ffx=0
 # Evening flats:
  
 if test `ls ff-ev*.fits | wc -l` -gt 0
-then
-echo ""
-echo " Evening flats"
-echo ""
+    then
+    echo ""
+    echo " Evening flats"
+    echo ""
 
-grep ff-ev ${logfile} | grep DARK | awk '{print $1}' > ff-ev-dark.cat
-grep ff-ev ${logfile} | grep BIAS | awk '{print $1}' > ff-ev-bias.cat
+    grep ff-ev ${logfile} | grep DARK | awk '{print $1}' > ff-ev-dark.cat
+    grep ff-ev ${logfile} | grep BIAS | awk '{print $1}' > ff-ev-bias.cat
 
-if test `cat ff-ev-dark.cat | wc -l` -gt 3
-then
-pyraf_zerocombine.py @ff-ev-dark.cat ff-ev-dark.fits
-fi
-if test `cat ff-ev-bias.cat | wc -l` -gt 3
-then
-pyraf_zerocombine.py @ff-ev-bias.cat ff-ev-bias.fits
-fi
+    if test `cat ff-ev-dark.cat | wc -l` -gt 3
+        then
+        pyraf_zerocombine.py @ff-ev-dark.cat ff-ev-dark.fits
+    fi
+    if test `cat ff-ev-bias.cat | wc -l` -gt 3
+        then
+        pyraf_zerocombine.py @ff-ev-bias.cat ff-ev-bias.fits
+    fi
 
-if test -e ff-ev-bias.fits
-then
-zero_ev="ff-ev-bias.fits"
-fi
-if test -e ff-ev-dark.fits
-then
-zero_ev="ff-ev-dark.fits"
-fi
+    if test -e ff-ev-bias.fits
+        then
+        zero_ev="ff-ev-bias.fits"
+    fi
+    if test -e ff-ev-dark.fits
+        then
+        zero_ev="ff-ev-dark.fits"
+    fi
 
-if test -s $zero_ev
-then
+    if test -s ${zero_ev}
+        then
+        echo "using evening zero ${zero_ev}"
+        grep ff-ev ${logfile} | grep FLAT| awk '{print $1}' > ff-ev-flat.cat
 
-grep ff-ev ${logfile} | grep FLAT| awk '{print $1}' > ff-ev-flat.cat
+        pyraf_imstat.py @ff-ev-flat.cat > ff-ev-flat.sts
+        cp ff-ev-flat.sts ${CALIB_FILES_DIR}
 
-pyraf_imstat.py @ff-ev-flat.cat > ff-ev-flat.sts
-cp ff-ev-flat.sts ${CALIB_FILES_DIR}
+        awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-ev-flat.sts > ff-ev-flat-ok.cat
+        for i in `cat ff-ev-flat-ok.cat` ; do grep $i ${logfile} ; done  > ff-ev.log
+        grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-ev-flat-t.cat
+        grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-ev-flat-bt.cat
+        pyraf_ccdproc_zerocor_trim.py @ff-ev-flat-ok.cat @ff-ev-flat-t.cat @ff-ev-flat-bt.cat $zero_ev
 
-awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-ev-flat.sts > ff-ev-flat-ok.cat
-for i in `cat ff-ev-flat-ok.cat` ; do grep $i ${logfile} ; done  > ff-ev.log
-grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-ev-flat-t.cat
-grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-ev-flat-bt.cat
-pyraf_ccdproc_zerocor_trim.py @ff-ev-flat-ok.cat @ff-ev-flat-t.cat @ff-ev-flat-bt.cat $zero_ev
+        for f in ${filter_seq}
+            do
+            grep ff-ev ff-ev.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,'  > flat${f}-ev.cat
 
-for f in ${filter_seq}
-do
-grep ff-ev ff-ev.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,'  > flat${f}-ev.cat
-
-if test `cat flat${f}-ev.cat | wc -l` -ge ${min_good_flats}
-then
-pyraf_flatcombine.py @flat${f}-ev.cat flat${f}-ev.fits
-cp flat${f}-ev.fits ${CALIB_FILES_DIR}
-fi
-done
-fi
+            if test `cat flat${f}-ev.cat | wc -l` -ge ${min_good_flats}
+                then
+                pyraf_flatcombine.py @flat${f}-ev.cat flat${f}-ev.fits
+                cp flat${f}-ev.fits ${CALIB_FILES_DIR}
+            fi
+        done
+    fi
 fi
 
 ################
@@ -304,8 +304,10 @@ then
 zero_mo="ff-mo-dark.fits"
 fi
 
-if test -s $zero_mo
+if test -s ${zero_mo}
 then
+
+echo "using morning zero ${zero_ev}"
 
 grep ff-mo ${logfile} | grep FLAT | awk '{print $1}' > ff-mo-flat.cat
 pyraf_imstat.py @ff-mo-flat.cat > ff-mo-flat.sts

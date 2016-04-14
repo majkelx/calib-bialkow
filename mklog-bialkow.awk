@@ -1,4 +1,4 @@
-#!/usr/bin/gawk -f
+#!/usr/bin/env gawk -f
 
 BEGIN {
 if(ARGC!=2) {print "\nFITS header content extractor (ZK, ver. BIALKOW 2013-11-10)\n Usage: ./mklog-bialkow <fits_file>"
