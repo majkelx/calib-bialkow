@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from jdcal import gcal2jd
-from fitshdr import stream_log_for_files, stream_log_for_catalog
+from fitshdr import stream_log_for_files
 import sys
 
 def formatfilter(original):

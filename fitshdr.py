@@ -35,7 +35,7 @@
 
 import pyfits
 import sys
-import ntpath
+import os
 
 # Predefined rules (key, pyfits.Header, **opt) -> value
 
@@ -138,7 +138,7 @@ def stream_log_for_files(
         huds = pyfits.open(f)
         huds[0].verify('fix')
         srchdr = huds[0].header
-        loghdr = process_header(srchdr, rules, clear=True, filename=ntpath.basename(f), **rule_params)
+        loghdr = process_header(srchdr, rules, clear=True, filename=os.path.basename(f), **rule_params)
         stream_header_values(loghdr, stream, delimiter)
         stream.write('\n')
         huds.close()
