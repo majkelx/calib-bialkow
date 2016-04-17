@@ -33,8 +33,9 @@
             See also great guide for formatting output: https://pyformat.info
 """
 
-import pyfits as pf
+import pyfits
 import sys
+import ntpath
 
 # Predefined rules (key, pyfits.Header, **opt) -> value
 
@@ -73,7 +74,7 @@ def process_header(hdr, rules, clear=True, **rules_args):
         rules output is applied to original header
     returns resulting pyfits.Header object
     """
-    ret = pf.Header() if clear else hdr
+    ret = pyfits.Header() if clear else hdr
     for key, rule in rules:
         val = rule(key, hdr, **rules_args)
         if val is not None:
@@ -133,10 +134,11 @@ def stream_log_for_files(
     if include_column_names_comment:
         stream.write(comment_char + delimiter.join([column for column, __ in rules]) + '\n')
     for f in filename_iterable:
-        huds = pf.open(f)
+        f = f.strip()
+        huds = pyfits.open(f)
         huds[0].verify('fix')
         srchdr = huds[0].header
-        loghdr = process_header(srchdr, rules, clear=True, filename=f, **rule_params)
+        loghdr = process_header(srchdr, rules, clear=True, filename=ntpath.basename(f), **rule_params)
         stream_header_values(loghdr, stream, delimiter)
         stream.write('\n')
         huds.close()

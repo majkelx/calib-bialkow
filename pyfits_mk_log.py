@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from jdcal import gcal2jd
-from fitshdr import stream_log_for_files
+from fitshdr import stream_log_for_files, stream_log_for_catalog
 import sys
 
 def formatfilter(original):
@@ -42,11 +42,19 @@ if __name__ == "__main__":
 
     ## parse script arguments
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('files', nargs='*', help='files to process e.g.: data/*.fits')
+    argparser.description = \
+        '''Make Bialkow log in the calib-bialkow format,
+            reads the list of FITS files from stdin, outputs a log to stdout
+            and warnings (sometimes a lot) to stderr'''
+    argparser.epilog = 'example:\n\t ls -tr *.fits | pyfits_mk_log.py > night.log 2> error.log'
     argparser.add_argument('-l', '--logfile', help='name of logfile (instead of stdout)')
+    argparser.add_argument('-f', '--files', nargs='*', help='files to process e.g.: data/*.fits (instead of stdin)')
     args = argparser.parse_args()
 
-    stream = sys.stdout if args.logfile is None else open(args.logfile, 'w')
-    stream_log_for_files(args.files, stream, bialkow_rulez)
+    ostream = sys.stdout if args.logfile is None else open(args.logfile, 'w')
+    istream  = sys.stdin  if args.files   is None else args.files
+
+    stream_log_for_files(istream, ostream, bialkow_rulez)
+
     if args.logfile is not None:
-        stream.close()
+        ostream.close()

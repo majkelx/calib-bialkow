@@ -4,17 +4,18 @@ if [ $# -lt 1 ]
 then
 #clear
 echo ""
-echo " Script calib_bialkow.bash"
+echo " Script calib_bialkow_new.bash"
 echo " the calibration pipeline for ANDOR CCD images from Bialkow Observatory"
+echo " version NOT using dfits (eclipse(ESO)) & jday "
 echo ""
-echo " Usage: calib_bialkow.bash <log file> [l]"
-echo " requirements: PyRAF, eclipse(ESO)"
+echo " Usage: calib_bialkow_new.bash <log file> [l]"
+echo " requirements: python 2.6+ with[PyRAF, PyFITS, argparse], gawk, bash4.0+"
 echo " and all scripts included in directory ${Calib_PATH}"
 echo ""
 echo " Log file should be created by mklog-bialkow.awk script !"
 echo " Option [l] makes new log file by reading headers of all"
 echo " FITS files in the current directory (with .fits extension)."
-echo " Version: 2014.06.25, (ZK)"
+echo " Version: 2016.04.16, (ZK)"
 echo " Calib_PATH: ${Calib_PATH}"
 echo ""
 exit
@@ -164,9 +165,9 @@ fi
 if test "$2" = "l"
     then
 
-    if test ! -s ${Calib_PATH}/mklog-bialkow.awk
+    if test ! -s ${Calib_PATH}/pyfits_mk_log.py
         then
-        echo " Script mklog-bialkow.awk does not exist in ${Calib_PATH} directory !"
+        echo " Script pyfits_mk_log.py does not exist in ${Calib_PATH} directory !"
         exit
     fi
 
@@ -178,13 +179,7 @@ if test "$2" = "l"
         exit
     fi
 
-    if test ! -s ${logfile}
-        then
-        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
-    else
-        rm -f ${logfile}
-        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
-    fi
+    ls -tr *.fits | pyfits_mk_log.py -l ${logfile}
 
     echo " Log-file  ${logfile}  done."
 

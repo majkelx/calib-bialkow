@@ -1,10 +1,14 @@
 Instrukcje dotyczące użycia oprogramowania do automatycznej
 kalibracji obserwacji wykonanych w Białkowie. 
-Wersja 2014.07.22
+Wersja 2016.04.16
 
 Skrypt główny calib_bialkow.bash przeprowadza pełną(*), automatyczną 
 kalibrację obrazów CCD wykonanych kamerą ANDOR DW-432 w obserwatorium 
 w Białkowie.
+
+Skrypt  calib_bialkow_new.bash ma tą samą funkcjonalność, jednak
+generowanie loga jest
+nie wymaga instalacji: dfits (eclipse(ESO)) i jday
 
 1. Instalacja, wymagania i zależności.
 
@@ -27,11 +31,12 @@ następujące programy zainstalowane w systemie Linux:
 - moduły języka python: numpy, pyfits, f2n (http://obswww.unige.ch/~tewes/f2n_dot_py/),
 - IRAF/PyRAF,
 - gawk, sed, grep, gvim
-- eclipse (ESO),
 - gnuplot,
-- jday,
 - netpbm,  (http://netpbm.sourceforge.net)
 - convert (ImageMagick http://www.imagemagick.org)
+Dla oryginalnego calib_bialkow.bash dodatkowo:
+- jday,
+- eclipse (ESO),
 
 Dokumentacja i instrukcja instalacji modułu f2n znajduje się pod adresem
     http://obswww.unige.ch/~tewes/f2n_dot_py/
@@ -53,8 +58,11 @@ wyświetlany jest wedytorze vim (gvim) dziennik obserwacyjny w celu sprawdzenia
 jego porawności i kompletności. W tym momencie można dokonać ostatnich 
 korekt (a następnie je zapisać). Zbiór danych kalibracyjnych oraz 
 naukowych objętych dalszym działaniem skryptu zdefiniowany jest w pliku DO. 
-Do utworzenia nowego pliku z DO używany jest program mklog-bialkow.awk,
-który może być uruchomiany niezależnie. 
+Do utworzenia nowego pliku z DO używany jest alternatywnie:
+ - program: mklog-bialkow.awk, lub
+ - program: pyfits_mk_log.py
+które mogą być uruchomiane niezależnie od gównego skryptu.
+
 Pliki FITS występujące w DO powinny znajdować się w aktualnym katalogu.
 
 
@@ -73,7 +81,7 @@ Jeśli chcemy mieć dostęp do programów kalibracyjnych ustawiony na stałe
 to należy dopisać to polecenie do ustawień startowych powłoki, 
 np. do pliku .bashrc jeśli domyślnie korzystany z powłoki bash.
 
-Edytując plik calib_bialkow.bash można zmienić ustawienia kilku
+Edytując plik calib_bialkow[_new].bash można zmienić ustawienia kilku
 zmiennych wewnętrznych zdefiniowanych w jednym bloku na początku skryptu.
 
 Ścieżki do katalogów:
