@@ -1,21 +1,7 @@
 TODO (MK)
-
+Do rozważenia:
 [ ] zautomatyzować (dodać) instalację pakietu f2n
+[ ] uniezależnić się od f2n, ImageMagic...- zmienić generowanie obrazów jpeg
 [ ] zautomatyzować instalację wszysykiego przez distutils setup.py
-[ ] uzupełnić '4. Ppis dzialania skryptu' w readme
 [ ] więcej parametrow do skryptu
-[ ] wywalić domyślność gvim jak go nie ma
-[ ] flattening fits directories
-[ ] fits-y muszą być plasko w aktualnym katalogu. Są do niego kopiowane inne rzeczy. Trzeba zrobić katalog
-
-[ ] Faza 1 fizucznie - kopiujemy szystko jak leci do jednego katalogu
-
-
-Problemy:
-
-- płaski katlog! nazy plików:
-  a) obrabiać po koleji *
-  b) napisać powego mk_log
-  c) napisać spłaszczacz wrzucający pliki do katalogu z nowymi nazwami
-
- -
+[ ] wersja z użyciem automake
