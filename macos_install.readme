@@ -29,7 +29,18 @@ Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
 6. Zainstalować gnuplot
     > brew install gnuplot
 
-7. Zainstalować Eclipse (ESO):
+7. Zainstalować bash w wersji 4+
+        > brew install bash
+    nie dziala u mnie, jakiś serwer nie odpowiada... może naprawią
+        > sudo port install bash
+    jest OK
+
+Kolejne punkty można pominąć i używać skryptu
+    calib_bialkow_new.bash
+zamiast
+    calib_bialkow.bash
+
+8. Zainstalować Eclipse (ESO):
     > ftp ftp://ftp.eso.org/pub/eclipse/eclipse-5.0.0/eclipse-main-5.0.0.tar.gz
     > tar -xzf eclipse-main-5.0.0.tar.gz
     > cd eclipse-5.0.0/
@@ -47,18 +58,11 @@ Pobrać i zainstalować pakiet anaconda w wersji z python2 (nie python3)
     jakoś dodoajemy ten albo wszystkie z tego katalogu pliki do ścieżki,
     np kopiując go do katalogu calib-bialkow
 
-8. Zainstalować bash w wersji 4+
-        > brew install bash
-    nie dziala u mnie, jakiś serwer nie odpowiada... może naprawią
-        > sudo port install bash
-    jest OK
 
 9. Zainstalować jday,
     https://sourceforge.net/projects/jday/
    wg instrukcji, ./configure / make / make install
 
-10. Zainstalować pytonowi PyObjC (dla pyraf) duże i długo.
-    > pip install PyObjC
 
 
 
