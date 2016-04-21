@@ -90,7 +90,7 @@ def stream_header_values(hdr, stream, delimiter=' '):
     stream - output stream
     delimiter - values delimiter
     """
-    for v in hdr.itervalues():
+    for v in hdr.values():
         stream.write(v)
         stream.write(delimiter)
 
@@ -119,6 +119,8 @@ def stream_log_for_files(
         comment_char='#',
         top_comment=None,
         include_column_names_comment=False,
+        sort_key=None,
+        sort_rev=False,
         **rule_params):
     """stream log of processed FITS headers
 
@@ -133,15 +135,23 @@ def stream_log_for_files(
         stream.write(comment_char + top_comment + '\n')
     if include_column_names_comment:
         stream.write(comment_char + delimiter.join([column for column, __ in rules]) + '\n')
+    lines = [] # used when sort
     for f in filename_iterable:
         f = f.strip()
         huds = pyfits.open(f)
-        huds[0].verify('fix')
+        huds[0].verify('silentfix')
         srchdr = huds[0].header
         loghdr = process_header(srchdr, rules, clear=True, filename=os.path.basename(f), **rule_params)
-        stream_header_values(loghdr, stream, delimiter)
-        stream.write('\n')
+        if sort_key is None:
+            stream_header_values(loghdr, stream, delimiter)
+            stream.write('\n')
+        else:
+            lines.append({'sortkey': loghdr[sort_key], 'line':lineof_header_values(loghdr, delimiter)})
         huds.close()
+    if sort_key is not None:
+        lines.sort(reverse=sort_rev, key=lambda el: el['sortkey'])
+        for line in lines:
+            stream.write(line['line']+'\n')
 
 
 def stream_log_for_path(
