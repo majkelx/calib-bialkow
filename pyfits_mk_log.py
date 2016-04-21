@@ -47,6 +47,7 @@ if __name__ == "__main__":
             reads the list of FITS files from stdin, outputs a log to stdout
             and warnings (sometimes a lot) to stderr'''
     argparser.epilog = 'example:\n\t ls -tr *.fits | pyfits_mk_log.py > night.log 2> error.log'
+    argparser.add_argument('-s', '--sort', action='store_true', help='sort by julian date (in memory)')
     argparser.add_argument('-l', '--logfile', help='name of logfile (instead of stdout)')
     argparser.add_argument('-f', '--files', nargs='*', help='files to process e.g.: data/*.fits (instead of stdin)')
     args = argparser.parse_args()
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     ostream = sys.stdout if args.logfile is None else open(args.logfile, 'w')
     istream  = sys.stdin  if args.files   is None else args.files
 
-    stream_log_for_files(istream, ostream, bialkow_rulez)
+    stream_log_for_files(istream, ostream, bialkow_rulez, sort_key='JDAY' if args.sort else None)
 
     if args.logfile is not None:
         ostream.close()
