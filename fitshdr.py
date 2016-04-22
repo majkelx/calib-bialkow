@@ -6,8 +6,12 @@
       sample rules ar defined in 'sample_log_rules'
 
     - logs creation
-        write_log_for_catalog(catalog_filename, ...)
-        write_log_for_path (fits_path_name, ...)
+        stream_log_for_files(filename_iterable, ostream, rules...)
+        stream_log_for_catalog(catalog_filename, ...)
+        stream_log_for_path (fits_path_name, ...)
+
+    - header updates
+        update_hdr_for_files(filename_iterable, rules)
 
     The main data structure for these routines is pyfits.Header.
     For rules parameter, use list of rules: tuples:
@@ -111,6 +115,36 @@ def lineof_header_values(hdr, delimiter=' '):
     return ret
 
 
+def update_hdr(hdr, rules, **rule_params):
+    """updates FITS header according to rules
+
+    hdr     - pyfits.Header
+    rules   - list of tuples ('KEY', rule function) see: 'process_header'
+    """
+    process_header(hdr, rules, clear=False, **rule_params)
+
+
+def update_hdr_for_files(filename_iterable, rules, autofix=True, **rule_params):
+    """updates FITS headers according to rules
+
+    filename_iterable - iterator for FITS filenames
+    rules - list of tuples ('KEY', rule function) see: 'process_header'
+    autofix - whether do pyfits.verify('silentfix') or not
+                True  - can change some wrong cards silently,
+                False - can cause errors on access to wrong card
+    """
+    for f in filename_iterable:
+        f = f.strip()
+        huds = pyfits.open(f, mode='update')
+        if autofix:
+            huds[0].verify('silentfix')
+            huds.flush(output_verify='silentfix')
+        srchdr = huds[0].header
+        update_hdr(srchdr, rules, filename=os.path.basename(f), **rule_params)
+        huds.flush(output_verify='ignore')
+        huds.close()
+
+
 def stream_log_for_files(
         filename_iterable,
         stream,
@@ -135,7 +169,7 @@ def stream_log_for_files(
         stream.write(comment_char + top_comment + '\n')
     if include_column_names_comment:
         stream.write(comment_char + delimiter.join([column for column, __ in rules]) + '\n')
-    lines = [] # used when sort
+    lines = []  # used when sort
     for f in filename_iterable:
         f = f.strip()
         huds = pyfits.open(f)
@@ -146,7 +180,7 @@ def stream_log_for_files(
             stream_header_values(loghdr, stream, delimiter)
             stream.write('\n')
         else:
-            lines.append({'sortkey': loghdr[sort_key], 'line':lineof_header_values(loghdr, delimiter)})
+            lines.append({'sortkey': loghdr[sort_key], 'line': lineof_header_values(loghdr, delimiter)})
         huds.close()
     if sort_key is not None:
         lines.sort(reverse=sort_rev, key=lambda el: el['sortkey'])

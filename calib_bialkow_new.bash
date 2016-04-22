@@ -208,7 +208,23 @@ if [ "$2" != "o" ] && [ "$2" != "f" ]; then
 	${edit} ${logfile}
 fi
 
-pyraf_hedit_add_expt.py ${logfile}
+
+############################
+echo ""
+echo "---------------------------------"
+echo " FITS header fields canonization"
+echo "---------------------------------"
+echo ""
+############################
+
+## OLD version
+#pyraf_hedit_add_expt.py ${logfile}
+
+## Add exptime, and correct headers
+#
+awk '{print $1}' night.log | pyfits_canonize_hdr.py
+
+
 
 if test "$2" = "o"
     then
