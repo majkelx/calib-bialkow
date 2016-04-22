@@ -180,7 +180,7 @@ if test "$2" = "l"
         then
         echo " Number of FITS files in the current directory ${PWD}"
         echo " is too small: ${n_fits}"
-        exit
+        exit 1
     fi
 
     ls -tr *.fits | pyfits_mk_log.py -s -l ${logfile} 2>/dev/null
@@ -193,7 +193,7 @@ else
         then
         echo " ${logfile} not found !"
         echo " Use l option to create new log file."
-        exit
+        exit 1
     fi
 
 fi
@@ -203,7 +203,10 @@ fi
 #sort -n -k 13 ${logfile} > tmp_log
 #mv tmp_log ${logfile}
 
-${edit} ${logfile}
+# suppress editing logflie step in partial execution
+if [ "$2" != "o" ] && [ "$2" != "f" ]; then
+	${edit} ${logfile}
+fi
 
 pyraf_hedit_add_expt.py ${logfile}
 
@@ -414,7 +417,7 @@ if test ${ffx} -eq 0
 	echo ""
 	echo " !! There are no FLAT-FIELDS in the current directory !!"
 	echo ""
-	exit
+	exit 1
 fi
 
 ## flats only?
@@ -468,7 +471,7 @@ pyraf_imarith_zerosub.py @night-bias_2.cat night-bias_av_2.fits @night-bias-diff
 else
 echo " Script execution terminated !"
 echo ' The average BIAS image (night-bias_av_2.fits) not found in the current directory '
-exit
+exit 1
 fi
 
 pyraf_imstat.py @night-bias-diff_2.cat > night-bias-diff_2.sts
@@ -487,7 +490,7 @@ cp object_2_bias_interp.data diffbias_2 bias_2_interp.ps ${CALIB_FILES_DIR}
 else
 echo " Script execution terminated !"
 echo " Too small number of BIAS images with readout speed 2 !"
-exit
+exit 1
 fi
 rm *-b1.fits
 fi
@@ -520,7 +523,7 @@ else
 
 echo " Script execution terminated !"
 echo ' The average BIAS image (night-bias_av_16.fits) not found in the current directory'
-exit
+exit 1
 fi
 
 pyraf_imstat.py @night-bias-diff_16.cat > night-bias-diff_16.sts
@@ -538,7 +541,7 @@ cp object_16_bias_interp.data diffbias_16 bias_16_interp.ps ${CALIB_FILES_DIR}
 else
 echo " Script execution terminated !"
 echo " Too small number of BIAS images with readout speed 16"
-exit
+exit 1
 fi
 rm *-b1.fits
 fi
