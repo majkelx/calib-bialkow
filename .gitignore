@@ -90,3 +90,8 @@ ENV/
 #pyCharm
 .idea/
 .pyraf_*
+
+#pyRaf
+pyraf/
+
+tmp/
