@@ -1,6 +1,6 @@
 # Instrukcje dotyczące użycia oprogramowania do automatycznej kalibracji obserwacji wykonanych w Białkowie.
 
-Wersja 2016.04.22
+Wersja 2016.04.22, autor Z. Kołaczkowski (www.astro.uni.wroc.pl)
 
 Skrypt główny calib_bialkow.bash przeprowadza automatyczną kalibrację
 obrazów CCD wykonanych kamerą ANDOR DW-432 w obserwatorium w Białkowie.
@@ -10,12 +10,8 @@ obrazów CCD wykonanych kamerą ANDOR DW-432 w obserwatorium w Białkowie.
 ## 1. Instalacja, wymagania i zależności.
 
 ---------------------------------------------------------
-
-Oprogramowanie do automatycznej kalibracji dostępne jest
-na komputerze `fornax` (156.17.59.11) w katalogu `/home/zibi` jako
-archiwum `calib-bialkow.tar.gz`. Po skopiowaniu i rozpakowaniu
-archiwum (`tar xzvf calib-bialkow.tar.gz`) należy przejść do
-katalogu `calib-bialkow` i skopiować plik `.calib_phot_bialkow_rc`
+ Po skopiowaniu i rozpakowaniu archiwum (np. `tar xzvf calib-bialkow.tar.gz`) 
+należy przejść do katalogu `calib-bialkow` i skopiować plik `.calib_phot_bialkow_rc`
 do swojego katalogu domowego, a następnie wpisać w tym pliku
 odpowiednią ścieżkę (pełną) do katalogu z rozpakowanymi skryptami,
 czyli do katalogu `calib-bialkow`. Po wykonaniu polecenia:
