@@ -32,7 +32,7 @@ bialkow_rulez = [
     ('SPEED', lambda k, h, **args: '{:3d}'.format(h['GAIN'])),
     ('FILTER', lambda k, h, **args: formatfilter(h['FILTER'])),
     ('DATA-TYP', lambda k, h, **args: '{:>7s}'.format(h['DATA-TYP'])),
-    ('OBJECT', lambda k, h, **args: '{:>12s}'.format(h['OBJECT'])),
+    ('OBJECT', lambda k, h, **args: '{:>12s}'.format((h['OBJECT']).replace(' ', '-'))),
     ('JDAY', lambda k, h, **args: formatjday(h['OBS-DATE'], h['UT'])),
 ]
 
