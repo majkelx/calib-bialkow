@@ -1,7 +1,6 @@
 TODO (MK)
 Do rozważenia:
 [ ] zautomatyzować (dodać) instalację pakietu f2n
-[ ] uniezależnić się od f2n, ImageMagic...- zmienić generowanie obrazów jpeg
 [ ] zautomatyzować instalację wszysykiego przez distutils setup.py
-[ ] więcej parametrow do skryptu
-[ ] wersja z użyciem automake
+[x] więcej parametrow do skryptu
+[x] wersja z użyciem automake

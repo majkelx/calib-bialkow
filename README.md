@@ -1,59 +1,69 @@
-# Instrukcje dotyczące użycia oprogramowania do automatycznej
-# kalibracji obserwacji wykonanych w Białkowie.
+# Instrukcje dotyczące użycia oprogramowania do automatycznej kalibracji obserwacji wykonanych w Białkowie.
 
-Wersja 2016.04.16
+Wersja 2016.04.22
 
 Skrypt główny calib_bialkow.bash przeprowadza automatyczną kalibrację
 obrazów CCD wykonanych kamerą ANDOR DW-432 w obserwatorium w Białkowie.
 
+---------------------------------------------------------
 
 ## 1. Instalacja, wymagania i zależności.
 
+---------------------------------------------------------
+
 Oprogramowanie do automatycznej kalibracji dostępne jest
-na komputerze fornax (156.17.59.11) w katalogu /home/zibi jako
-archiwum calib-bialkow.tar.gz. Po skopiowaniu i rozpakowaniu
-archiwum (tar xzvf calib-bialkow.tar.gz) należy przejść do
-katalogu calib-bialkow i skopiować plik .calib_phot_bialkow_rc
+na komputerze `fornax` (156.17.59.11) w katalogu `/home/zibi` jako
+archiwum `calib-bialkow.tar.gz`. Po skopiowaniu i rozpakowaniu
+archiwum (`tar xzvf calib-bialkow.tar.gz`) należy przejść do
+katalogu `calib-bialkow` i skopiować plik `.calib_phot_bialkow_rc`
 do swojego katalogu domowego, a następnie wpisać w tym pliku
 odpowiednią ścieżkę (pełną) do katalogu z rozpakowanymi skryptami,
-czyli do katalogu calib-bialkow. Po wykonaniu polecenia:
- source $HOME/.calib_phot_bialkow_rc
+czyli do katalogu `calib-bialkow`. Po wykonaniu polecenia:
+ `source $HOME/.calib_phot_bialkow_rc`
 wszystkie programy/skrypty można uruchamiać w dowolnym katalogu
 roboczym, w którym znajdują się odpowiednie obrazy kalibracyjne
 oraz naukowe.
 
 Do poprawnego działania wszystkich elementów skryptu wymagane są
 następujące programy zainstalowane w systemie Linux:
+
 - bash, wersja >= 4.0,
 - gawk, sed, grep, gvim,
 - python, wersja >= 2.6,
 - moduły języka python:
-   numpy (http://www.scipy.org/scipylib/download.html),
-   pyfits (http://www.stsci.edu/institute/software_hardware/pyfits/Download),
-   f2n (http://obswww.unige.ch/~tewes/f2n_dot_py/),
-- IRAF/PyRAF (http://iraf.noao.edu/,
-  http://www.stsci.edu/institute/software_hardware/pyraf/current/download),
-- gnuplot (http://www.gnuplot.info/),
-- netpbm (http://netpbm.sourceforge.net/),
-- convert (http://www.imagemagick.org/)
-Następujące programy są wymagane dla oryginalnego skryptu calib_bialkow.bash,
-w przypadku ich pominięcia można używać wersji calib_bialkow_new.bash:
+   - numpy (`http://www.scipy.org/scipylib/download.html`),
+   - pyfits (`http://www.stsci.edu/institute/software_hardware/pyfits/Download`),
+   - f2n (`http://obswww.unige.ch/~tewes/f2n_dot_py/`),
+- IRAF/PyRAF (`http://iraf.noao.edu/`,
+ `http://www.stsci.edu/institute/software_hardware/pyraf/current/download`),
+- gnuplot (`http://www.gnuplot.info/`),
+- netpbm (`http://netpbm.sourceforge.net/`),
+- convert (`http://www.imagemagick.org/`)
+
+Następujące programy są wymagane dla oryginalnego skryptu `calib_bialkow.bash`,
+w przypadku ich pominięcia można używać wersji `calib_bialkow_new.bash` lub `cb_make.bash`:
+
 - eclipse (ESO) (ftp://ftp.eso.org/pub/eclipse/),
 - jday (http://sourceforge.net/projects/jday/),
 
-Plik macos_install.readme zawiera wskazówki dotyczące instalacji na MacOS
+Plik `macos_install.readme` zawiera wskazówki dotyczące instalacji na MacOS
+
+---------------------------------------------------------
 
 ## 2. Ustawienia środowiska i zmiennych wewnętrznych.
 
+---------------------------------------------------------
+
 Dostęp do wszystkich potrzebnych skryptów i danych pomocniczych
 ustawiany jest przez wydanie polecenia:
- source $HOME/.calib_phot_bialkow_rc
+ `source $HOME/.calib_phot_bialkow_rc`
 które tworzy zmienną środowiskową Calib_PATH i dopisuje odpowiednie
 lokalizacje do zmiennej systemowej PATH.
-Oczywiście wcześniej należy skopiować plik .calib_phot_bialkow_rc
+Oczywiście wcześniej należy skopiować plik `.calib_phot_bialkow_rc`
 do własnego katalogu domowego oraz wpisać w nim poprawne ścieżki do
 katalogów zawierających oprogramowanie do automatycznej kalibracji
-(Calib_PATH) i redukcji (Phot_PATH).
+(`Calib_PATH`) i redukcji (`Phot_PATH`).
+
 Jeśli chcemy mieć dostęp do programów kalibracyjnych ustawiony na stałe
 to należy dopisać to polecenie do ustawień startowych powłoki,
 np. do pliku .bashrc jeśli domyślnie korzystany z powłoki bash.
@@ -62,53 +72,64 @@ Przed pierwszym uruchominiem skrytu calib_bialkow.bash należy
 również skonfigurować IRAF-a. W katalogu domowym powinien
 być dostępny plik konfiguracyjny login.cl (jeśli go tam nie ma
 należy po przejściu do katalogu domowego uruchomić komendę mkiraf).
+
 Niektóre z ustawień w tym pliku należy zmienić na:
+
 set	stdimage	= imt2048
+
 set	imtype		= "fits"
 
 Plik login.cl jest kopiowany z katalogu domowego do katalogu
 w którym uruchamiamy skrypt calib_bialkow.bash.
 
 
-Edytując główny skrypt calib_bialkow.bash można zmienić ustawienia kilku
+Edytując główny skrypt `calib_bialkow.bash` można zmienić ustawienia kilku
 zmiennych wewnętrznych zdefiniowanych w jednym bloku na początku skryptu.
 
 Ścieżki do katalogów:
 
-CALIB_FILES_DIR - zawiera wszystkie obrazy kalibracyjne utworzne
+`CALIB_FILES_DIR` - zawiera wszystkie obrazy kalibracyjne utworzne
 przez skrypt i użyte do kalibracji oraz dane diagnostyczne dotyczące
 procesu kalibracji. Domyślnie jest to podkatalog zakładany przez skrypt
 w aktualnym katalogu.
 
-CDATA_DIR - po poprawnym wykonaniu skryptu zawiera wszystkie skalibrowane
+`CDATA_DIR` - po poprawnym wykonaniu skryptu zawiera wszystkie skalibrowane
 obrazy obiektów (w nagłówku FITS: DATA-TYP=OBJECT). Domyślnie jest
 to podkatalog zakładany przez skrypt w aktualnym katalogu.
 
-AUX_FILES_DIR - zawiera dodatkowe pliki używane podczas kalibracji,
+`AUX_FILES_DIR` - zawiera dodatkowe pliki używane podczas kalibracji,
 które nie są tworzone podczas wykonywania skryptu,
 np. uśrednione obrazy typu DARK z długimi czasami naświetlania.
 Domyślnie jest to podkatalog w katalogu zawierającym oprogramowanie
 do kalibracji.
 
 Nazwy plików z wzorcowymi obrazami typu DARK:
-long_dark_2 (dla prędkości odczytu 2)
-long_dark_16 (dla prędkości odczytu 16)
+
+`long_dark_2` (dla prędkości odczytu 2)
+
+`long_dark_16` (dla prędkości odczytu 16)
+
 oraz odpowiadające im czasy integracji:
-long_dark_2_exp, long_dark_16_exp.
-Nazwy plików podstawione do zmiennych long_dark_2 i long_dark_16
+
+`long_dark_2_exp`, `long_dark_16_exp`.
+
+Nazwy plików podstawione do zmiennych `long_dark_2` i `long_dark_16`
 powinny odpowiadać obrazom znajdującym się w katalogu wskazywanym
-przez zmienną AUX_FILES_DIR.
+przez zmienną `AUX_FILES_DIR`.
 
-filter_seq - lista filtrów używanych podczas obserwacji.
+`filter_seq` - lista filtrów używanych podczas obserwacji.
 
-flat_max_v, flat_min_v  - definiują zakres wartości średnich (w ADU)
-dla obrazów typu FLAT-FIELD, które będą używane w procesie kalibracji.
+`flat_max_v`, `flat_min_v`  - definiują zakres wartości średnich (w ADU)
+dla obrazów typu FLAT-FIELD (FF), które będą używane w procesie kalibracji.
 
 lim_dark_time - dla obserwacji z czasem ekspozycji równym lub dłuższym
 stosowane jest odejmowanie przeskalowanego obrazu typu DARK.
 
+---------------------------------------------------------
 
-## 3. Argumenty wywołania calib_bialkow.bash, plik z dziennikiem obserwacyjnym.
+## 3. Argumenty wywołania `calib_bialkow.bash`, plik z dziennikiem obserwacyjnym.
+
+---------------------------------------------------------
 
 Składnia i krótki opis wyświetlane są po uruchominiu bez argumentów.
 Pierwszym i jedynym obowiązkowym argumentem jest nazwa pliku
@@ -123,7 +144,7 @@ WSZYSTKICH plików FITS znajdujących się w aktualnym katalogu (*.fits).
 Do utworzenia nowego pliku z DO używany jest program mklog-bialkow.awk,
 który może być uruchomiany niezależnie.
 
-Skrypt calib_bialkow_new.bash, jest funkcjonalnym odpowiednikiem calib_bialkow.bash
+Skrypt `calib_bialkow_new.bash`, jest funkcjonalnym odpowiednikiem `calib_bialkow.bash`
 z procesem generowania DO przepisanym do pythona. Dzięki temu nie wymaga on do działania
 eclipse (ESO) i jday. Skrypt pyfits_mk_log.py można również wykorzystać do niezależnego
 wygenerowania DO (patrz: pyfits_mk_log.py --help).
@@ -137,14 +158,68 @@ Zbiór danych kalibracyjnych oraz naukowych objętych dalszym działaniem
 skryptu zdefiniowany jest w pliku zawierającym DO.
 
 Format pojedyńczej linii w pliku DO:
-nazwa_pliku  rok miesiąc dzień godzina minuta sekunda czas_ekspozycji
-prędkość_odczytu filtr typ_obrazu nazwa_obiektu data_julianska
+
+`nazwa_pliku`  `rok` `miesiąc` `dzień` `godzina` `minuta` `sekunda` `czas_ekspozycji`
+`prędkość_odczytu` `filtr` `typ_obrazu` `nazwa_obiektu` `data_julianska`
 
 gdzie wszystkie dane dotyczące czasu odpowiadają momentowi rozpoczęcia
 ekspozycji.
 
+---------------------------------------------------------
 
-##  4. Krótki opis działania skryptu calib_bialkow.bash.
+##  4. Obsługa oprogramowania *make-style* skrypt `cb_make.bash`
+
+---------------------------------------------------------
+
+ Alternatywnym interfejsem do oprogramowania jest skrypt `cb_make.bash`.
+
+Umożliwia on  elastyczne zarządzanie procesem kalibracji, bazując na
+narzędziu make. Wywołanie:
+
+```
+cb_make.bash [-h|--help] [target]
+```
+
+gdzie `target` jest jednym z poniższych:
+
+* `cb_make.bash log`: tworzy DO: `night.log` jeśli go nie ma
+
+* `cb_make.bash force-log`: tworzy DO: `night.log` nadpisując istniejący jeśli istnieje.
+
+* `cb_make.bash flat`: tworzy znormalizowane FF, (i `night.log` jeśli go nie ma). Jeżeli FF istnieją starsze niż `night.log` nic nie robi.
+
+* `cb_make.bash force-flat`: wymusza stworzenie  znormalizowanych FF, nawet jeśli istnieją
+
+* `cb_make.bash calib`: wykonuje pełną kalibrację, tworząc `night.log` i FF jeśli to konieczne.
+
+* `cb_make.bash force-calib`: wymusza pełną kalibrację, nawet jeśli była aktualna - obróbka FF i kalibracja zostanie wymuszona.  `night.log` zostanie zbudowany tylko jeżeli go nie ma.
+
+* `cb_make.bash clean-log`: usuwa `night.log`.
+
+* `cb_make.bash clean-for-calib`: usuwa poprzednio zbudowane FF i pliki kalibracyjne.
+
+* `cb_make.bash clean-all`: `clean-for-calib`+ `clean-log`
+
+Wszystkie *targety* i ich zależności można prześledzić w pliku `calib.makefile`.
+
+`cb_make.bash` używa tych skryptu `calib_bialkow_new.bash` i w nim można dokonać zmian konfiguracji o których mowa w części dotyczącej ustawień zmiennych. Nie wymaga Eclipse(ESO) i jday.
+
+Wraz z generowaniem `night.log` tworzona jest jego kopia `night.original.log` jako referencja co zostało ręcznie usunięte.
+
+Przy czyszczeniu lub nadpisywaniu istniejących `CALIB_FILES` i `CALIB_DATA`, ich zawartość jest kopiowana do `CALIB_FILES.PREV` i `CALIB_DATA.PREV` odpowiednio. Jeżeli istniały wcześniej, ich zawartość jest usuwana. Poza backup-em, umożliwia to porównanie wyników dwóch kolejnych kalibracji.
+
+Wywołania skryptów nie wymagają wcześniejszego ręcznego czyszczenia katalogów.
+
+Zależności pomiędzy targetami `log`, `flat` i `calib` są badane poprzez istnieniem i timestamp plików `night.log`, `CALIB_FILES/flats_processed`, `CALIB_FILES/calibration_processed` odpowiednio. Jeżeli plik wcześniejszego kroku ma timestamp świeższy niż kroku kolejnego, krok kolejny zostanie wykonany, w przeciwnym razie, nie (chyba że użyje się wariantu przedrostkiem `force-`). Przykładowo, zmiana w `night.log` spowoduje wykonanie kroków kalibracji po wywołaniu `cb_make.bash calib`.
+
+#### Skrypt `cb_make_recursive.bash`
+Skrypt, mający takie same parametry jak `cb_make.bash`, dla każdego z podkatalogów (pierwszego poziomu) wykona odpowiedni  `cb_make.bash`.
+
+---------------------------------------------------------
+
+##  5. Krótki opis działania skryptu `calib_bialkow.bash`
+
+---------------------------------------------------------
 
  Decydującym czynnikiem dla przebiegu procesu kalibracji jest poprawna
 zawartość pliku DO, szczególnie istotne są informacje o:
@@ -157,7 +232,7 @@ temperatura detektora, wynosząca -50 stopni C.
 Podczas wykonania skryptu oryginalne dane nie są nadpisywane, po kolejnych
 krokach kalibracji powstają pliki ze znakami dodanymi do pierwotnej nazwy.
 Końcowe pliki wynikowe zapisywane są w katalogach wskazanych przez zmienne
-CDATA_DIR i CALIB_FILES_DIR, odpowiednia informacja o ich lokalizacji
+`CDATA_DIR` i `CALIB_FILES_DIR`, odpowiednia informacja o ich lokalizacji
 wyświetlana jest jako ostatni komunikat. Po wykryciu typowego błędu
 podczas wykonania skryptu wyświetlany jest odpowiedni komunikat
 i proces kalibracji zostaje przerwany. Przed kolejnym uruchomieniem
@@ -167,10 +242,10 @@ próby kalibracji.
 Proces kalibracji przebiega etapowo, przed rozpoczęciem każdego z etapów
 w terminalu wyświetlana jest krótka informacja. Poszczególne operacje na
 obrazach są wykonywane przez skrypty wywołujące odpowiednio skonfigurowane
-zadania pakietu IRAF/PyRAF (ich nazwy zaczynają się od pyraf_).
+zadania pakietu IRAF/PyRAF (ich nazwy zaczynają się od `pyraf_`).
 Etapy kalibracji obejmują kolejno:
 
-- Gdy zostanie użyty argument "l" tworzony jest nowy plik zawierający DO.
+- Gdy zostanie użyty argument `l` tworzony jest nowy plik zawierający DO.
 Wyświetlenie DO w edytorze tekstowym w celu weryfikacji jego poprawności.
 Należy zapisać ten plik jeśli dokonamy zmian.
 
@@ -181,21 +256,20 @@ skalowane do wspólnego poziomu. Wieczorne i poranne pomiary są przetwarzane
 niezależnie, ale jeśli to możliwe do kalibracji używany jest otrzymany z nich
 obraz średni. Dodatkowo tworzone są obrazy kontrolne, stosunki odpowiednich
 wieczornych i porannych obrazów medianowych typu FLAT-FIELD unormowane
-do wartości 1. Pliki te mają nazwy: ff*-div-norm.fits, ff*-div-norm.jpg
-i są zapisane w katalogu wskazanym przez zmienną CALIB_FILES_DIR.
+do wartości 1. Pliki te mają nazwy: `ff*-div-norm.fits`, `ff*-div-norm.jpg`
+i są zapisane w katalogu wskazanym przez zmienną `CALIB_FILES_DIR`.
 
 - Utworzenie średniego obrazu typu BIAS, następnie interpolacja liniowa zmian
 poziomu sygnału "zerowego" w trakcie obserwacji.
 
 - Odejmowanie od wszystkich obserwacji naukowych średniego obrazu BIAS oraz poprawek
 wynikających z interpolacji zmian sygnału "zerowego". Wykresy ilustrujące te zmiany
-dostępne są w katalogu wskazanym przez zmienną CALIB_FILES_DIR (bias_2_interp.ps,
-bias_16_interp.ps).
+dostępne są w katalogu wskazanym przez zmienną `CALIB_FILES_DIR` (`bias_2_interp.ps`,
+`bias_16_interp.ps`).
 
 - Odejmowanie od obrazów naukowych obrazów typu DARK (przeskalowanych na wymagany
 czas ekspozycji). Dotyczy to tylko obserwacji z czasami ekspozycji dłuższymi niż
-wartość zmiennej lim_dark_time.
+wartość zmiennej `lim_dark_time`.
 
 - Zastosowanie kalibracji typu FLAT-FIELD, a następnie przeniesienie wszystkich
-skalibrowanych obrazów naukowych do katalogu wskazanego przez zmienną CDATA_DIR.
-
+skalibrowanych obrazów naukowych do katalogu wskazanego przez zmienną `CDATA_DIR`.
