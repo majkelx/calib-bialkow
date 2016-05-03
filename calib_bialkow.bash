@@ -6,15 +6,20 @@ then
 echo ""
 echo " Script calib_bialkow.bash"
 echo " the calibration pipeline for ANDOR CCD images from Bialkow Observatory"
+echo " version NOT using dfits (eclipse(ESO)) & jday "
 echo ""
-echo " Usage: calib_bialkow.bash <log file> [l]"
-echo " requirements: PyRAF, eclipse(ESO)"
+echo " Usage: calib_bialkow_new.bash <log file> [l]"
+echo " requirements: python 2.6+ with[PyRAF, PyFITS, argparse], gawk, bash4.0+"
 echo " and all scripts included in directory ${Calib_PATH}"
 echo ""
 echo " Log file should be created by mklog-bialkow.awk script !"
 echo " Option [l] makes new log file by reading headers of all"
 echo " FITS files in the current directory (with .fits extension)."
-echo " Version: 2014.06.25, (ZK)"
+echo ""
+echo " Option [f] makes only FLAT-FIELD processing, then stops"
+echo " Option [o] skips FLAT-FIELD processing, can be used after [o]"
+echo " to make further processing if no changes was made."
+echo " Version: 2016.05.01, (ZK, MK)"
 echo " Calib_PATH: ${Calib_PATH}"
 echo ""
 exit
@@ -164,9 +169,9 @@ fi
 if test "$2" = "l"
     then
 
-    if test ! -s ${Calib_PATH}/mklog-bialkow.awk
+    if test ! -s ${Calib_PATH}/pyfits_mk_log.py
         then
-        echo " Script mklog-bialkow.awk does not exist in ${Calib_PATH} directory !"
+        echo " Script pyfits_mk_log.py does not exist in ${Calib_PATH} directory !"
         exit
     fi
 
@@ -175,16 +180,10 @@ if test "$2" = "l"
         then
         echo " Number of FITS files in the current directory ${PWD}"
         echo " is too small: ${n_fits}"
-        exit
+        exit 1
     fi
 
-    if test ! -s ${logfile}
-        then
-        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
-    else
-        rm -f ${logfile}
-        for i in `ls -tr *.fits` ; do mklog-bialkow.awk $i ; done > ${logfile}
-    fi
+    ls -tr *.fits | pyfits_mk_log.py -s -l ${logfile} 2>/dev/null
 
     echo " Log-file  ${logfile}  done."
 
@@ -194,212 +193,259 @@ else
         then
         echo " ${logfile} not found !"
         echo " Use l option to create new log file."
-        exit
+        exit 1
     fi
 
 fi
 
-# sorting logfile in the chronological order:
-sort -n -k 13 ${logfile} > tmp_log
-mv tmp_log ${logfile}
+# sorting logfile in the chronological order: (MK) removed
+# sorting added to generation, if OBJECT has space (e.g. NGC 6871) sorting was wrong
+#sort -n -k 13 ${logfile} > tmp_log
+#mv tmp_log ${logfile}
 
-${edit} ${logfile}
+# suppress editing logflie step in partial execution
+if [ "$2" != "o" ] && [ "$2" != "f" ]; then
+	${edit} ${logfile}
+fi
 
-pyraf_hedit_add_expt.py ${logfile}
 
-################################
+############################
 echo ""
-echo "----------------------"
-echo "  Making FLAT-FIELDS"
-echo "----------------------"
+echo "---------------------------------"
+echo " FITS header fields canonization"
+echo "---------------------------------"
 echo ""
-################################
+############################
 
-ffx=0
+## OLD version
+#pyraf_hedit_add_expt.py ${logfile}
 
-################
-# Evening flats:
- 
-if test `ls ff-ev*.fits | wc -l` -gt 0
+## Add exptime, and correct headers
+#
+awk '{print $1}' ${logfile} | pyfits_canonize_hdr.py
+
+
+
+if test "$2" = "o"
     then
-    echo ""
-    echo " Evening flats"
-    echo ""
-
-    grep ff-ev ${logfile} | grep DARK | awk '{print $1}' > ff-ev-dark.cat
-    grep ff-ev ${logfile} | grep BIAS | awk '{print $1}' > ff-ev-bias.cat
-
-    if test `cat ff-ev-dark.cat | wc -l` -gt 3
-        then
-        pyraf_zerocombine.py @ff-ev-dark.cat ff-ev-dark.fits
-    fi
-    if test `cat ff-ev-bias.cat | wc -l` -gt 3
-        then
-        pyraf_zerocombine.py @ff-ev-bias.cat ff-ev-bias.fits
-    fi
-
-    if test -e ff-ev-bias.fits
-        then
-        zero_ev="ff-ev-bias.fits"
-    fi
-    if test -e ff-ev-dark.fits
-        then
-        zero_ev="ff-ev-dark.fits"
-    fi
-
-    if test -s ${zero_ev}
-        then
-        echo "using evening zero ${zero_ev}"
-        grep ff-ev ${logfile} | grep FLAT| awk '{print $1}' > ff-ev-flat.cat
-
-        pyraf_imstat.py @ff-ev-flat.cat > ff-ev-flat.sts
-        cp ff-ev-flat.sts ${CALIB_FILES_DIR}
-
-        awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-ev-flat.sts > ff-ev-flat-ok.cat
-        for i in `cat ff-ev-flat-ok.cat` ; do grep $i ${logfile} ; done  > ff-ev.log
-        grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-ev-flat-t.cat
-        grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-ev-flat-bt.cat
-        pyraf_ccdproc_zerocor_trim.py @ff-ev-flat-ok.cat @ff-ev-flat-t.cat @ff-ev-flat-bt.cat $zero_ev
-
-        for f in ${filter_seq}
-            do
-            grep ff-ev ff-ev.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,'  > flat${f}-ev.cat
-
-            if test `cat flat${f}-ev.cat | wc -l` -ge ${min_good_flats}
-                then
-                pyraf_flatcombine.py @flat${f}-ev.cat flat${f}-ev.fits
-                cp flat${f}-ev.fits ${CALIB_FILES_DIR}
-            fi
-        done
-    fi
-fi
-
-################
-# Morning flats:
-
-if test `ls ff-mo*.fits | wc -l` -gt 0
-then
-echo ""
-echo " Morning flats"
-echo ""
-
-grep ff-mo ${logfile} | grep DARK | awk '{print $1}' > ff-mo-dark.cat
-grep ff-mo ${logfile} | grep BIAS | awk '{print $1}' > ff-mo-bias.cat
-
-if test `cat ff-mo-dark.cat |wc -l` -gt 3
-then
-pyraf_zerocombine.py @ff-mo-dark.cat ff-mo-dark.fits
-fi
-if test `cat ff-mo-bias.cat |wc -l` -gt 3
-then
-pyraf_zerocombine.py @ff-mo-bias.cat ff-mo-bias.fits
-fi
-
-if test -e ff-mo-bias.fits
-then
-zero_mo="ff-mo-bias.fits"
-fi
-if test -e ff-mo-dark.fits
-then
-zero_mo="ff-mo-dark.fits"
-fi
-
-if test -s ${zero_mo}
-then
-
-echo "using morning zero ${zero_ev}"
-
-grep ff-mo ${logfile} | grep FLAT | awk '{print $1}' > ff-mo-flat.cat
-pyraf_imstat.py @ff-mo-flat.cat > ff-mo-flat.sts
-cp ff-mo-flat.sts ${CALIB_FILES_DIR}
-
-awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-mo-flat.sts > ff-mo-flat-ok.cat
-for i in `cat ff-mo-flat-ok.cat` ; do grep $i ${logfile} >> ff-mo.log ; done
-grep ff-mo ff-mo.log | grep FLAT | awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-mo-flat-t.cat
-grep ff-mo ff-mo.log | grep FLAT | awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-mo-flat-bt.cat
-pyraf_ccdproc_zerocor_trim.py @ff-mo-flat-ok.cat @ff-mo-flat-t.cat @ff-mo-flat-bt.cat $zero_mo
-
-for f in  ${filter_seq}
-do
-grep ff-mo ff-mo.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,' > flat${f}-mo.cat
-
-if test `cat flat${f}-mo.cat | wc -l` -ge ${min_good_flats}
-then
-pyraf_flatcombine.py @flat${f}-mo.cat flat${f}-mo.fits
-cp flat${f}-mo.fits ${CALIB_FILES_DIR}
-fi
-done
-
-fi
-fi
-rm ff-*-t.fits
-
-########################
-# Compare flat-fields:
-
-for f in  ${filter_seq}
-do
-if test -e flat${f}-mo.fits -a -e flat${f}-ev.fits
-then
-ls flat${f}-mo.fits flat${f}-ev.fits > flat${f}-ev-mo.cat
-# Average FF (evening + morning)
-pyraf_flatcombine_ev_mo.py @flat${f}-ev-mo.cat flat${f}-ev-mo.fits
-cp flat${f}-ev-mo.fits ${CALIB_FILES_DIR}
-
-##  FF control pictures (morning / evening normalized to 1)
-pyraf_imarith_flatdiv.py flat${f}-mo.fits flat${f}-ev.fits ff${f}-div.fits
-pyraf_imstat.py ff${f}-div.fits >  ff${f}-div.sts
-avdiv=`awk '$1~ /.fits/ {printf("%8.3f\n", $3)}' ff${f}-div.sts`
-pyraf_imarith_flatdiv.py ff${f}-div.fits $avdiv ff${f}-div-norm.fits
-pyraf_imstat.py ff${f}-div-norm.fits > ff${f}-div.sts
-
-# FITS to JPEG conversion 
-fits2png.py ff${f}-div-norm.fits ff${f}-div-norm.png > fits2png.log
-pngtopnm ff${f}-div-norm.png > ff${f}-div-norm.pnm
-pnmscale 0.5 ff${f}-div-norm.pnm > tmp.pnm
-mv tmp.pnm ff${f}-div-norm.pnm
-pnmtojpeg ff${f}-div-norm.pnm > ff${f}-div-norm.jpg
-z1=`grep 'auto z1' fits2png.log | sed -e 's/,//g' | awk '{printf("%.4f",$5)}'`
-z2=`grep 'auto z2' fits2png.log | sed -e 's/,//g' | awk '{printf("%.4f",$5)}'`
-zp=`awk 'BEGIN {z1='${z1}'; z2='${z2}'; printf("%.2f",(z2-z1)*100.0 ) }'` 
-rm ff${f}-div-norm.png ff${f}-div-norm.pnm
-convert -font Helvetica -pointsize 34 -fill blue -draw "text 40,35 'Min ${z1}, Max ${z2}, var. ${zp}%'" ff${f}-div-norm.jpg tmp.jpg 
-mv tmp.jpg ff${f}-div-norm.jpg
-mv ff${f}-div-norm.* ${CALIB_FILES_DIR}
-
-##
-echo ""
-echo " Flat-field morning/evening control picture ff${f}-div-norm"
-echo " stored in directory ${CALIB_FILES_DIR}"
-echo ""
-
-fi
-
-if test -s flat${f}-ev-mo.fits
-then
-ff_file[${f}]="flat${f}-ev-mo.fits"
-ffx=1
-elif test -s flat${f}-ev.fits
-then
-ff_file[${f}]="flat${f}-ev.fits"
-ffx=1
-elif test -s flat${f}-mo.fits
-then
-ff_file[${f}]="flat${f}-mo.fits"
-ffx=1
+	echo ""
+	echo "  Skipping FLAT-FIELDS processing  "
+	echo ""
 else
-echo " Warning: There is no FLAT-FIELD in ${f} filter !"
-ff_file[${f}]=""
-fi
+
+	################################
+	echo ""
+	echo "----------------------"
+	echo "  Making FLAT-FIELDS"
+	echo "----------------------"
+	echo ""
+	################################
+
+	ffx=0
+
+	################
+	# Evening flats:
+
+	if test `grep 'ff.*ev.*fits' ${logfile} | wc -l` -gt 0
+		then
+		echo ""
+		echo " Evening flats"
+		echo ""
+
+		grep 'ff.*ev' ${logfile} | grep DARK | awk '{print $1}' > ff-ev-dark.cat
+		grep 'ff.*ev' ${logfile} | grep BIAS | awk '{print $1}' > ff-ev-bias.cat
+
+		if test `cat ff-ev-dark.cat | wc -l` -gt 3
+			then
+			pyraf_zerocombine.py @ff-ev-dark.cat ff-ev-dark.fits
+		fi
+		if test `cat ff-ev-bias.cat | wc -l` -gt 3
+			then
+			pyraf_zerocombine.py @ff-ev-bias.cat ff-ev-bias.fits
+		fi
+
+		if test -e ff-ev-bias.fits
+			then
+			zero_ev="ff-ev-bias.fits"
+		fi
+		if test -e ff-ev-dark.fits
+			then
+			zero_ev="ff-ev-dark.fits"
+		fi
+
+		if test -s ${zero_ev}
+			then
+			echo "using evening zero ${zero_ev}"
+			grep 'ff.*ev' ${logfile} | grep FLAT | awk '{print $1}' > ff-ev-flat.cat
+
+			pyraf_imstat.py @ff-ev-flat.cat > ff-ev-flat.sts
+			cp ff-ev-flat.sts ${CALIB_FILES_DIR}
+
+			awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-ev-flat.sts > ff-ev-flat-ok.cat
+			for i in `cat ff-ev-flat-ok.cat` ; do grep $i ${logfile} ; done  > ff-ev.log
+			grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-ev-flat-t.cat
+			grep ff-ev ff-ev.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-ev-flat-bt.cat
+			pyraf_ccdproc_zerocor_trim.py @ff-ev-flat-ok.cat @ff-ev-flat-t.cat @ff-ev-flat-bt.cat $zero_ev
+
+			for f in ${filter_seq}
+				do
+				grep ff-ev ff-ev.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,'  > flat${f}-ev.cat
+
+				if test `cat flat${f}-ev.cat | wc -l` -ge ${min_good_flats}
+					then
+					pyraf_flatcombine.py @flat${f}-ev.cat flat${f}-ev.fits
+					cp flat${f}-ev.fits ${CALIB_FILES_DIR}
+				fi
+			done
+		fi
+	fi
+
+	################
+	# Morning flats:
+
+	if test `grep 'ff.*mo.*fits' ${logfile} | wc -l` -gt 0
+		then
+		echo ""
+		echo " Morning flats"
+		echo ""
+
+		grep 'ff.*mo' ${logfile} | grep DARK | awk '{print $1}' > ff-mo-dark.cat
+		grep 'ff.*mo' ${logfile} | grep BIAS | awk '{print $1}' > ff-mo-bias.cat
+
+		if test `cat ff-mo-dark.cat | wc -l` -gt 3
+			then
+			pyraf_zerocombine.py @ff-mo-dark.cat ff-mo-dark.fits
+		fi
+		if test `cat ff-mo-bias.cat | wc -l` -gt 3
+			then
+			pyraf_zerocombine.py @ff-mo-bias.cat ff-mo-bias.fits
+		fi
+
+		if test -e ff-mo-bias.fits
+			then
+			zero_mo="ff-mo-bias.fits"
+		fi
+		if test -e ff-mo-dark.fits
+			then
+			zero_mo="ff-mo-dark.fits"
+		fi
+
+		if test -s ${zero_mo}
+			then
+			echo "using morning zero ${zero_mo}"
+			grep 'ff.*mo' ${logfile} | grep FLAT | awk '{print $1}' > ff-mo-flat.cat
+
+			pyraf_imstat.py @ff-mo-flat.cat > ff-mo-flat.sts
+			cp ff-mo-flat.sts ${CALIB_FILES_DIR}
+
+			awk 'BEGIN {max='${flat_max_v}'; min='${flat_min_v}'}; $1~ /.fits/ && $3>min && $3<max {print $1}' ff-mo-flat.sts > ff-mo-flat-ok.cat
+			for i in `cat ff-mo-flat-ok.cat` ; do grep $i ${logfile} ; done  > ff-mo.log
+			grep ff-mo ff-mo.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-t.fits,' > ff-mo-flat-t.cat
+			grep ff-mo ff-mo.log | grep FLAT| awk '{print $1}' | sed -e 's,.fits,-bt.fits,' > ff-mo-flat-bt.cat
+			pyraf_ccdproc_zerocor_trim.py @ff-mo-flat-ok.cat @ff-mo-flat-t.cat @ff-mo-flat-bt.cat $zero_mo
+
+			for f in ${filter_seq}
+				do
+				grep ff-mo ff-mo.log | grep FLAT | awk ' $10~ /'${f}'/ {print $1}' | sed -e 's,.fits,-bt.fits,'  > flat${f}-mo.cat
+
+				if test `cat flat${f}-mo.cat | wc -l` -ge ${min_good_flats}
+					then
+					pyraf_flatcombine.py @flat${f}-mo.cat flat${f}-mo.fits
+					cp flat${f}-mo.fits ${CALIB_FILES_DIR}
+				fi
+			done
+		fi
+	fi
+
+	rm ff-*-t.fits
+
+	########################
+	# Compare flat-fields:
+
+	for f in  ${filter_seq}
+		do
+		if test -e flat${f}-mo.fits -a -e flat${f}-ev.fits
+			then
+			ls flat${f}-mo.fits flat${f}-ev.fits > flat${f}-ev-mo.cat
+			# Average FF (evening + morning)
+			pyraf_flatcombine_ev_mo.py @flat${f}-ev-mo.cat flat${f}-ev-mo.fits
+			cp flat${f}-ev-mo.fits ${CALIB_FILES_DIR}
+
+			##  FF control pictures (morning / evening normalized to 1)
+			pyraf_imarith_flatdiv.py flat${f}-mo.fits flat${f}-ev.fits ff${f}-div.fits
+			pyraf_imstat.py ff${f}-div.fits >  ff${f}-div.sts
+			avdiv=`awk '$1~ /.fits/ {printf("%8.3f\n", $3)}' ff${f}-div.sts`
+			pyraf_imarith_flatdiv.py ff${f}-div.fits $avdiv ff${f}-div-norm.fits
+			pyraf_imstat.py ff${f}-div-norm.fits > ff${f}-div.sts
+
+			# FITS to JPEG conversion
+			fits2png.py ff${f}-div-norm.fits ff${f}-div-norm.png > fits2png.log
+			pngtopnm ff${f}-div-norm.png > ff${f}-div-norm.pnm
+			pnmscale 0.5 ff${f}-div-norm.pnm > tmp.pnm
+			mv tmp.pnm ff${f}-div-norm.pnm
+			pnmtojpeg ff${f}-div-norm.pnm > ff${f}-div-norm.jpg
+			z1=`grep 'auto z1' fits2png.log | sed -e 's/,//g' | awk '{printf("%.4f",$5)}'`
+			z2=`grep 'auto z2' fits2png.log | sed -e 's/,//g' | awk '{printf("%.4f",$5)}'`
+			zp=`awk 'BEGIN {z1='${z1}'; z2='${z2}'; printf("%.2f",(z2-z1)*100.0 ) }'`
+			rm ff${f}-div-norm.png ff${f}-div-norm.pnm
+			convert -font Helvetica -pointsize 34 -fill blue -draw "text 40,35 'Min ${z1}, Max ${z2}, var. ${zp}%'" ff${f}-div-norm.jpg tmp.jpg
+			mv tmp.jpg ff${f}-div-norm.jpg
+			mv ff${f}-div-norm.* ${CALIB_FILES_DIR}
+
+			##
+			echo ""
+			echo " Flat-field morning/evening control picture ff${f}-div-norm"
+			echo " stored in directory ${CALIB_FILES_DIR}"
+			echo ""
+		fi
+	done
+	rm *-bt.fits
+	rm *.cat
+	rm *.sts
+	## stamp flats_processed time for make
+	touch ${CALIB_FILES_DIR}/flats_processed
+fi  ## skipping FLATs ?
+
+for f in  ${filter_seq}
+	do
+	if test -s flat${f}-ev-mo.fits
+		then
+		ff_file[${f}]="flat${f}-ev-mo.fits"
+		ffx=1
+	elif test -s flat${f}-ev.fits
+		then
+		ff_file[${f}]="flat${f}-ev.fits"
+		ffx=1
+	elif test -s flat${f}-mo.fits
+		then
+		ff_file[${f}]="flat${f}-mo.fits"
+		ffx=1
+	else
+		echo " Warning: There is no FLAT-FIELD in ${f} filter !"
+		ff_file[${f}]=""
+	fi
 done
+
 
 if test ${ffx} -eq 0
-then
-echo ""
-echo " !! There are no FLAT-FIELDS in the current directory !!"
-echo ""
-exit
+	then
+	echo ""
+	echo " !! There are no FLAT-FIELDS in the current directory !!"
+	echo ""
+	exit 1
 fi
+
+## flats only?
+if test "$2" = "f"
+    then
+	echo ""
+	echo " ==========================================================================="
+	echo "  FLAT-FIELDS processed."
+	echo " ==========================================================================="
+	echo ""
+    exit
+fi
+
 
 #######################
 echo ""
@@ -440,7 +486,7 @@ pyraf_imarith_zerosub.py @night-bias_2.cat night-bias_av_2.fits @night-bias-diff
 else
 echo " Script execution terminated !"
 echo ' The average BIAS image (night-bias_av_2.fits) not found in the current directory '
-exit
+exit 1
 fi
 
 pyraf_imstat.py @night-bias-diff_2.cat > night-bias-diff_2.sts
@@ -459,7 +505,7 @@ cp object_2_bias_interp.data diffbias_2 bias_2_interp.ps ${CALIB_FILES_DIR}
 else
 echo " Script execution terminated !"
 echo " Too small number of BIAS images with readout speed 2 !"
-exit
+exit 1
 fi
 rm *-b1.fits
 fi
@@ -492,7 +538,7 @@ else
 
 echo " Script execution terminated !"
 echo ' The average BIAS image (night-bias_av_16.fits) not found in the current directory'
-exit
+exit 1
 fi
 
 pyraf_imstat.py @night-bias-diff_16.cat > night-bias-diff_16.sts
@@ -510,7 +556,7 @@ cp object_16_bias_interp.data diffbias_16 bias_16_interp.ps ${CALIB_FILES_DIR}
 else
 echo " Script execution terminated !"
 echo " Too small number of BIAS images with readout speed 16"
-exit
+exit 1
 fi
 rm *-b1.fits
 fi
@@ -599,6 +645,9 @@ mv *-bdtf.fits ${CDATA_DIR}
 
 rm night-bias* diffbias* *-b.fits *-b[dt].fits *.cat *.ps *.sts *.data *.plt
 rm dark*.fits Dark*fits
+
+## stamp calibration_processed time for make
+touch ${CALIB_FILES_DIR}/calibration_processed
 
 echo ""
 echo " ==========================================================================="
