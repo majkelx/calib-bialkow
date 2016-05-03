@@ -4,8 +4,8 @@ import sys
 from pyraf import iraf
 
 def run_scldark(input):
-    iraf.image()
-    iraf.image.imutil()
+    iraf.image(_doprint=0)
+    iraf.image.imutil(_doprint=0)
     scl=float(input[1])/float(input[2])
 #    print input[1],scl
     iraf.imarith(input[0],"*",scl,input[3],divzero="0.0",hparams="",pixtype="",calctype="",verbose="no",noact="no")
