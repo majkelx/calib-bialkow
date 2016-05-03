@@ -4,7 +4,7 @@ import sys
 from pyraf import iraf
 
 def run_imstat(input):
-    iraf.images()
+    iraf.images(_doprint=0)
     for image in input:
         iraf.imstat(image,fields="image,npix,mean,stddev,min,max",lower="INDEF",upper="INDEF",nclip="0",lsigma="3",usigma="3",binwidth="0.1",format="no",cache="no")
 
